@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Staff login - {{ hotel_name }}{% endblock %}
+{% block content %}
+<section class="card narrow">
+  <h1>Staff login</h1>
+  <form method="post" class="form-grid">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="next" value="{{ next_page }}">
+    <label>Username
+      <input type="text" name="username" autocomplete="username" required autofocus>
+    </label>
+    <label>Password
+      <input type="password" name="password" autocomplete="current-password" required>
+    </label>
+    <button type="submit" class="btn btn-brass">Log in</button>
+  </form>
+  <p class="note">Guests do not need to log in. They can use <a href="{{ url_for('online_booking') }}">online booking</a>.</p>
+</section>
+{% endblock %}

@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Thank you - {{ hotel_name }}{% endblock %}
+{% block content %}
+<section class="card narrow empty">
+  <h1>Thank you</h1>
+  <p>{% if just_sent %}Your feedback was sent.{% else %}We already have your feedback for this stay.{% endif %} We hope to welcome you again.</p>
+  <a class="btn btn-brass" href="{{ url_for('home') }}">Back to home</a>
+</section>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Extra services - {{ hotel_name }}{% endblock %}
+{% block content %}
+<h1>Extra services</h1>
+<div class="two-col">
+  <section class="card">
+    <h2>Add a charge</h2>
+    {% if in_house %}
+    <form method="post" class="form-grid">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label>Guest
+        <select name="booking_id" required>
+          {% for g in in_house %}<option value="{{ g.booking_id }}">Room {{ g.room_no }} - {{ g.name }}</option>{% endfor %}
+        </select>
+      </label>
+      <label>Service
+        <select name="service" required>
+          {% for kind, items in services.items() %}
+            <optgroup label="{{ kind }}">
+              {% for item, price in items.items() %}<option value="{{ kind }}|{{ item }}">{{ item }} ({{ price }})</option>{% endfor %}
+            </optgroup>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Quantity <input type="number" name="qty" value="1" min="1" max="50" required></label>
+      <button type="submit" class="btn btn-brass">Add to room bill</button>
+    </form>
+    {% else %}
+      <p>No guests are checked in right now.</p>
+    {% endif %}
+  </section>
+  <section class="card">
+    <h2>Price list</h2>
+    {% for kind, items in services.items() %}
+      <h3>{{ kind }}</h3>
+      <div class="table-wrap"><table><tbody>{% for item, price in items.items() %}<tr><td>{{ item }}</td><td class="num">{{ price }}</td></tr>{% endfor %}</tbody></table></div>
+    {% endfor %}
+  </section>
+</div>
+{% if recent %}
+<section class="card">
+  <h2>Service charges for guests in the hotel</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Room</th><th>Guest</th><th>Service</th><th>Qty</th><th>Amount</th></tr></thead>
+    <tbody>{% for c in recent %}<tr><td>{{ c.room_no }}</td><td>{{ c.name }}</td><td>{{ c.kind }}: {{ c.description }}</td><td>{{ c.qty }}</td><td>{{ c.amount|num }}</td></tr>{% endfor %}</tbody>
+  </table></div>
+</section>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Booking confirmed - {{ hotel_name }}{% endblock %}
+{% block content %}
+<h1>Booking confirmed</h1>
+<p class="note">
+  {% if email_live %}A confirmation email with your bill was sent to {{ bill.booking.email }}.
+  {% else %}Demo mode: the confirmation email to {{ bill.booking.email }} and the text message are saved in the hotel's message log instead of being delivered.{% endif %}
+</p>
+{% include "_invoice.html" %}
+<div class="actions no-print invoice-actions">
+  <a class="btn btn-brass" href="{{ url_for('invoice', booking_id=bill.booking.booking_id) }}" target="_blank">Download PDF</a>
+  <button class="btn btn-outline" onclick="window.print()">Print</button>
+  <a class="btn btn-outline" href="{{ url_for('home') }}">Back to home</a>
+</div>
+{% endblock %}

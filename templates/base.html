@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ hotel_name }}{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="{{ url_for('home') }}">
+      <img src="{{ url_for('static', filename=images.logo) }}" alt="" class="brand-logo" onerror="this.style.display='none'">
+      <span>{{ hotel_name }}</span>
+    </a>
+    <nav>
+      <a href="{{ url_for('home') }}" class="{{ 'active' if request.endpoint == 'home' }}">Home</a>
+      <a href="{{ url_for('online_booking') }}" class="{{ 'active' if request.endpoint in ('online_booking', 'pay', 'confirmation') }}">Book online</a>
+      {% if user %}
+        <a href="{{ url_for('book_room') }}" class="{{ 'active' if request.endpoint == 'book_room' }}">Front desk</a>
+        <a href="{{ url_for('guests') }}" class="{{ 'active' if request.endpoint in ('guests', 'booking_page', 'booking_edit') }}">Guests</a>
+        <a href="{{ url_for('checkin_lookup') }}" class="{{ 'active' if request.endpoint == 'checkin_lookup' }}">QR check-in</a>
+        <a href="{{ url_for('restaurant') }}" class="{{ 'active' if request.endpoint == 'restaurant' }}">Restaurant</a>
+        <a href="{{ url_for('services') }}" class="{{ 'active' if request.endpoint == 'services' }}">Services</a>
+        <a href="{{ url_for('housekeeping') }}" class="{{ 'active' if request.endpoint == 'housekeeping' }}">Housekeeping</a>
+        <a href="{{ url_for('checkout') }}" class="{{ 'active' if request.endpoint in ('checkout', 'confirm_checkout') }}">Checkout</a>
+        {% if role == 'admin' %}
+          <a href="{{ url_for('reports') }}" class="{{ 'active' if request.endpoint == 'reports' }}">Reports</a>
+          <a href="{{ url_for('messages') }}" class="{{ 'active' if request.endpoint == 'messages' }}">Messages</a>
+          <a href="{{ url_for('staff') }}" class="{{ 'active' if request.endpoint == 'staff' }}">Staff</a>
+        {% endif %}
+        <a href="{{ url_for('account') }}" class="{{ 'active' if request.endpoint == 'account' }}">Account</a>
+        <a href="{{ url_for('logout') }}">Log out ({{ user }})</a>
+      {% else %}
+        <a href="{{ url_for('login') }}" class="{{ 'active' if request.endpoint == 'login' }}">Staff login</a>
+      {% endif %}
+    </nav>
+  </header>
+
+  <main>
+    {% if user and default_pw %}
+      <div class="flash flash-error">You are still using the default password. <a href="{{ url_for('account') }}">Change it now</a>, because this site is public.</div>
+    {% endif %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flashes">
+          {% for category, message in messages %}
+            <div class="flash flash-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="footer"><p>{{ hotel_name }} &ndash; Web-Based Hotel Management System</p></footer>
+</body>
+</html>

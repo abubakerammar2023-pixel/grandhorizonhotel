@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Front desk booking - {{ hotel_name }}{% endblock %}
+{% block content %}
+<h1>Front desk booking</h1>
+<div class="two-col">
+  <form method="post" class="card form-grid" novalidate>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label>Guest name <input type="text" name="name" value="{{ form.name }}" required></label>
+    <label>Phone number <input type="tel" name="phone" value="{{ form.phone }}" required></label>
+    <label>Email (optional, for the confirmation) <input type="email" name="email" value="{{ form.email }}"></label>
+    <label>ID proof number <input type="text" name="id_proof" value="{{ form.id_proof }}" required></label>
+    <label>Room
+      <select name="room_no" id="room_no" required>
+        <option value="">Choose a room</option>
+        {% for r in rooms %}
+          <option value="{{ r.no }}" {{ 'selected' if r.no == form.room_no }}>{{ r.no }} - {{ r.type }} ({{ r.price|num }}/night) - {{ r.status }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>Check-in date <input type="date" name="check_in" id="check_in" min="{{ today }}" value="{{ form.check_in }}" required></label>
+    <label>Check-out date <input type="date" name="check_out" id="check_out" min="{{ today }}" value="{{ form.check_out }}" required></label>
+    <p class="estimate" id="estimate">Choose a room and dates to see the room charge.</p>
+    <button type="submit" class="btn btn-brass">Save booking</button>
+  </form>
+  <aside class="card">
+    <h2>Room rates</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Room</th><th>Type</th><th>Per night</th><th>Today</th></tr></thead>
+        <tbody>
+          {% for r in rooms %}
+          <tr><td>{{ r.no }}</td><td>{{ r.type }}</td><td>{{ r.price|num }}</td>
+              <td><span class="badge badge-{{ r.status|lower }}">{{ r.status }}</span></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <p class="note">A room marked Occupied or Reserved can still be booked for dates that do not overlap its current booking.</p>
+  </aside>
+</div>
+<script>
+  const prices = {{ prices|tojson }};
+  const room = document.getElementById("room_no"), checkIn = document.getElementById("check_in"),
+        checkOut = document.getElementById("check_out"), estimate = document.getElementById("estimate");
+  function updateEstimate() {
+    const nights = (new Date(checkOut.value) - new Date(checkIn.value)) / 86400000;
+    estimate.textContent = (room.value && nights > 0)
+      ? nights + " night(s): room charge " + (nights * prices[room.value]).toLocaleString()
+      : "Choose a room and dates to see the room charge.";
+  }
+  [room, checkIn, checkOut].forEach(function (el) { el.addEventListener("change", updateEstimate); });
+  updateEstimate();
+</script>
+{% endblock %}

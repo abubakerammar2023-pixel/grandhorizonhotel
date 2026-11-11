@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Reports - {{ hotel_name }}{% endblock %}
+{% macro bars(data) %}
+  {% set top = (data | map(attribute=1) | max) if data else 0 %}
+  {% if top %}
+  <ul class="bars">
+    {% for label, value in data %}
+    <li>
+      <span class="bar-label">{{ label }}</span>
+      <span class="bar-track"><span class="bar-fill" style="width: {{ (100 * value / top)|round|int }}%"></span></span>
+      <span class="bar-value">{{ value|num }}</span>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}<p class="note">No data yet.</p>{% endif %}
+{% endmacro %}
+{% block content %}
+<div class="head-row">
+  <h1>Reports &amp; analytics</h1>
+  <div class="actions no-print">
+    <a class="btn btn-outline" href="{{ url_for('export_records') }}">Download CSV</a>
+    <button class="btn btn-outline" onclick="window.print()">Print</button>
+  </div>
+</div>
+
+<section class="stats">
+  <div><strong>{{ r.bookings }}</strong><span>Bookings</span></div>
+  <div><strong>{{ r.occupancy }}%</strong><span>Occupancy today</span></div>
+  <div><strong>{{ r.revenue_done|num }}</strong><span>Revenue, checked out ({{ currency }})</span></div>
+  <div><strong>{{ r.revenue_expected|num }}</strong><span>Expected, current and upcoming</span></div>
+  <div><strong>{{ r.avg_stay }}</strong><span>Average stay (nights)</span></div>
+  <div><strong>{{ r.rating_avg if r.rating_avg else '-' }}</strong><span>Guest rating ({{ r.rating_count }} review{{ 's' if r.rating_count != 1 }})</span></div>
+</section>
+
+<div class="two-col">
+  <section class="card"><h2>Revenue by category</h2>{{ bars(r.by_category) }}</section>
+  <section class="card"><h2>Revenue, last 7 days (by checkout)</h2>{{ bars(r.daily) }}</section>
+  <section class="card"><h2>Room revenue by type</h2>{{ bars(r.by_type) }}</section>
+  <section class="card"><h2>Bookings by source</h2>{{ bars(r.by_source) }}</section>
+  <section class="card"><h2>Most ordered menu items</h2>{{ bars(r.top_items) }}</section>
+  <section class="card">
+    <h2>Cancellations</h2>
+    <p>{{ r.cancelled }} cancelled booking{{ 's' if r.cancelled != 1 }}; refunds issued: {{ r.refunds|money }}.</p>
+  </section>
+</div>
+
+<section class="card">
+  <h2>Latest guest comments</h2>
+  {% if r.comments %}
+    <ul class="plain-list">
+      {% for c in r.comments %}
+      <li><span class="stars-view">{{ '★' * c.rating }}{{ '☆' * (5 - c.rating) }}</span> {{ c.comment }} <small class="note">({{ c.booking_id }}, {{ c.created_at[:10] }})</small></li>
+      {% endfor %}
+    </ul>
+  {% else %}<p class="note">No comments yet.</p>{% endif %}
+</section>
+{% endblock %}

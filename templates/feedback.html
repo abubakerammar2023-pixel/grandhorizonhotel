@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Your feedback - {{ hotel_name }}{% endblock %}
+{% block content %}
+<section class="card narrow">
+  <h1>How was your stay?</h1>
+  <p>Thank you for staying at {{ hotel_name }}, {{ b.name }}. Your feedback helps us improve.</p>
+  <form method="post" class="form-grid">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <fieldset class="stars">
+      <legend>Your rating</legend>
+      {% for n in (5, 4, 3, 2, 1) %}
+        <input type="radio" name="rating" id="star{{ n }}" value="{{ n }}" required>
+        <label for="star{{ n }}" title="{{ n }} star{{ 's' if n != 1 }}">&#9733;<span class="sr-only">{{ n }} star{{ 's' if n != 1 }}</span></label>
+      {% endfor %}
+    </fieldset>
+    <label>Comments (optional)
+      <textarea name="comment" rows="4" maxlength="500"></textarea>
+    </label>
+    <button type="submit" class="btn btn-brass">Send feedback</button>
+  </form>
+</section>
+{% endblock %}

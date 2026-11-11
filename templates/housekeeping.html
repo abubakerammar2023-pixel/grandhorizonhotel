@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Housekeeping - {{ hotel_name }}{% endblock %}
+{% block content %}
+<h1>Housekeeping</h1>
+<p class="note">Checkout marks a room Dirty. A guest can only be checked in to a room that is marked Clean.</p>
+<div class="card table-wrap">
+  <table>
+    <thead><tr><th>Room</th><th>Type</th><th>Occupancy</th><th>Housekeeping</th><th>Change</th></tr></thead>
+    <tbody>
+      {% for r in rooms %}
+      <tr>
+        <td>{{ r.no }}</td><td>{{ r.type }}</td>
+        <td><span class="badge badge-{{ r.status|lower }}">{{ r.status }}</span></td>
+        <td><span class="badge badge-hk-{{ r.housekeeping|lower }}">{{ r.housekeeping }}</span></td>
+        <td>
+          <form method="post" class="inline-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="room_no" value="{{ r.no }}">
+            <select name="status" aria-label="Status for room {{ r.no }}">
+              {% for o in options %}<option {{ 'selected' if o == r.housekeeping }}>{{ o }}</option>{% endfor %}
+            </select>
+            <button class="btn btn-small">Update</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

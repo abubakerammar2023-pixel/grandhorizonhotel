@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}QR check-in - {{ hotel_name }}{% endblock %}
+{% block content %}
+<h1>QR check-in</h1>
+<section class="card narrow">
+  <form method="get" id="code-form" class="form-grid">
+    <label>Booking code
+      <input type="text" name="code" id="code" placeholder="B001 or scan the guest's QR code" autocomplete="off" autofocus required>
+    </label>
+    <div class="actions">
+      <button type="submit" class="btn btn-brass">Find booking</button>
+      <button type="button" class="btn btn-outline" id="scan-btn">Scan with camera</button>
+    </div>
+  </form>
+  <video id="cam" playsinline hidden></video>
+  <p class="note" id="scan-note">A USB or phone QR scanner types the code into the box above. Camera scanning needs a browser that supports it (for example Chrome) and a secure (https) page.</p>
+</section>
+<script>
+  const form = document.getElementById("code-form"), input = document.getElementById("code"),
+        video = document.getElementById("cam"), btn = document.getElementById("scan-btn"),
+        note = document.getElementById("scan-note");
+  if (!("BarcodeDetector" in window) || !navigator.mediaDevices) {
+    btn.disabled = true;
+    note.textContent = "Camera scanning is not supported in this browser. Type the booking number or use a QR scanner.";
+  }
+  btn.addEventListener("click", async function () {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+      video.srcObject = stream; video.hidden = false; await video.play();
+      const detector = new BarcodeDetector({ formats: ["qr_code"] });
+      const timer = setInterval(async function () {
+        try {
+          const codes = await detector.detect(video);
+          if (codes.length) {
+            clearInterval(timer);
+            stream.getTracks().forEach(function (t) { t.stop(); });
+            input.value = codes[0].rawValue; form.submit();
+          }
+        } catch (e) { /* keep trying */ }
+      }, 400);
+    } catch (e) {
+      note.textContent = "The camera could not be opened. Allow camera access, or type the booking number.";
+    }
+  });
+</script>
+{% endblock %}

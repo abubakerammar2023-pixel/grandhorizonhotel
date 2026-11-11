@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Messages - {{ hotel_name }}{% endblock %}
+{% block content %}
+<h1>Email and SMS log</h1>
+<p class="note">
+  {% if email_live %}Emails are sent for real. SMS messages are saved in demo mode (real SMS needs a paid provider).
+  {% else %}Demo mode: messages are saved here instead of being delivered. Click "Open" to see an email exactly as the guest would. To send real emails, set the SMTP settings described in DEPLOY.md.{% endif %}
+</p>
+{% if rows %}
+<div class="card table-wrap">
+  <table>
+    <thead><tr><th>Time</th><th>Type</th><th>To</th><th>Subject</th><th>Message</th><th>Mode</th><th></th></tr></thead>
+    <tbody>
+      {% for m in rows %}
+      <tr>
+        <td>{{ m.created_at }}</td><td>{{ m.channel }}</td><td>{{ m.to_addr }}</td><td>{{ m.subject }}</td>
+        <td class="wrap">{{ m.body_text }}</td><td>{{ m.mode }}</td>
+        <td>{% if m.has_html %}<a href="{{ url_for('message_preview', message_id=m.id) }}" target="_blank">Open</a>{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="card empty"><p>No messages yet. They appear here after a booking or checkout.</p></div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{{ heading }}</title></head>
+<body style="margin:0;padding:0;background:#eef2f0;font-family:Arial,Helvetica,sans-serif;color:#12292e;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#eef2f0;padding:24px 0;">
+<tr><td align="center">
+  <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:8px;overflow:hidden;">
+    <tr><td style="background:#12292e;padding:22px 28px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
+        {% if has_logo %}<td width="56" style="padding-right:14px;"><img src="cid:hotel-logo" alt="" height="48" style="display:block;height:48px;width:auto;border:0;"></td>{% endif %}
+        <td style="font-family:Georgia,'Times New Roman',serif;font-size:22px;color:#ffffff;">{{ hotel_name }}</td>
+      </tr></table>
+    </td></tr>
+    <tr><td style="height:4px;background:#b88a3b;font-size:0;line-height:0;">&nbsp;</td></tr>
+
+    <tr><td style="padding:28px 28px 8px;">
+      <h1 style="margin:0 0 10px;font-family:Georgia,'Times New Roman',serif;font-size:24px;color:#12292e;">{{ heading }}</h1>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#33484a;">Dear {{ b.name }},<br>{{ intro }}</p>
+    </td></tr>
+
+    <tr><td style="padding:18px 28px 4px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#eef2f0;border-radius:8px;">
+        <tr>
+          <td style="padding:16px 18px;font-size:14px;line-height:1.7;" valign="top">
+            <strong>Booking</strong> {{ b.booking_id }}<br>
+            <strong>Room</strong> {{ b.room_no }} ({{ b.room_type }})<br>
+            <strong>Check-in</strong> {{ b.check_in }}<br>
+            <strong>Check-out</strong> {{ b.check_out }}<br>
+            <strong>Nights</strong> {{ b.nights }}
+          </td>
+          {% if show_qr %}
+          <td width="130" align="center" style="padding:12px 18px 12px 0;" valign="middle">
+            <img src="cid:qr-code" alt="Check-in QR code" width="110" height="110" style="display:block;border:0;border-radius:4px;">
+            <div style="font-size:11px;color:#5b6e6b;padding-top:4px;">Show at reception</div>
+          </td>
+          {% endif %}
+        </tr>
+      </table>
+    </td></tr>
+
+    {% if kind == 'cancelled' %}
+    <tr><td style="padding:18px 28px;font-size:15px;line-height:1.6;color:#33484a;">
+      {% if b.refund_amount|int > 0 %}A refund of <strong>{{ b.refund_amount|money }}</strong> has been issued to you.{% else %}No payment was refunded for this booking.{% endif %}
+    </td></tr>
+    {% else %}
+    <tr><td style="padding:20px 28px 0;">
+      <h2 style="margin:0 0 8px;font-family:Georgia,'Times New Roman',serif;font-size:18px;color:#12292e;">{{ 'Your bill' if kind == 'invoice' else 'Charges and payments' }}</h2>
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:14px;border-collapse:collapse;">
+        <tr style="background:#1d5a60;color:#ffffff;">
+          <td style="padding:9px 10px;font-weight:bold;">Description</td>
+          <td style="padding:9px 6px;font-weight:bold;" align="right">Qty</td>
+          <td style="padding:9px 10px;font-weight:bold;" align="right">Amount</td>
+        </tr>
+        {% for line in bill.lines %}
+        <tr style="background:{{ '#eef2f0' if loop.index is even else '#ffffff' }};">
+          <td style="padding:9px 10px;border-bottom:1px solid #d5ddda;">{{ line.description }}</td>
+          <td style="padding:9px 6px;border-bottom:1px solid #d5ddda;" align="right">{{ line.qty }}</td>
+          <td style="padding:9px 10px;border-bottom:1px solid #d5ddda;" align="right">{{ line.amount|num }}</td>
+        </tr>
+        {% endfor %}
+        <tr>
+          <td colspan="2" style="padding:12px 10px 4px;font-weight:bold;font-size:16px;" align="right">Total</td>
+          <td style="padding:12px 10px 4px;font-weight:bold;font-size:16px;" align="right">{{ bill.total|money }}</td>
+        </tr>
+        {% for p in bill.payments %}
+        <tr>
+          <td colspan="2" style="padding:3px 10px;color:#33484a;" align="right">{{ 'Refund' if p.amount < 0 else 'Paid' }} - {{ p.method }} ({{ p.created_at[:10] }})</td>
+          <td style="padding:3px 10px;color:#33484a;" align="right">{{ p.amount|money }}</td>
+        </tr>
+        {% endfor %}
+        <tr>
+          <td colspan="2" style="padding:6px 10px 4px;font-weight:bold;border-top:2px solid #12292e;" align="right">Balance due</td>
+          <td style="padding:6px 10px 4px;font-weight:bold;border-top:2px solid #12292e;" align="right">{{ bill.due|money }}</td>
+        </tr>
+      </table>
+      <p style="margin:14px 0 0;" align="center">
+        <span style="display:inline-block;border:2px solid {{ '#2f7d4f' if bill.due == 0 else '#b88a3b' }};color:{{ '#2f7d4f' if bill.due == 0 else '#b88a3b' }};font-weight:bold;letter-spacing:1px;padding:6px 18px;border-radius:4px;">{{ 'PAID IN FULL' if bill.due == 0 else 'PAYMENT DUE AT CHECKOUT' }}</span>
+      </p>
+    </td></tr>
+    {% endif %}
+
+    {% if feedback_url %}
+    <tr><td style="padding:24px 28px 0;" align="center">
+      <p style="margin:0 0 12px;font-size:15px;color:#33484a;">How was your stay? We would love to hear from you.</p>
+      <a href="{{ feedback_url }}" style="display:inline-block;background:#b88a3b;color:#ffffff;text-decoration:none;font-weight:bold;padding:12px 26px;border-radius:6px;">Rate your stay</a>
+    </td></tr>
+    {% endif %}
+
+    <tr><td style="padding:26px 28px 28px;font-size:12px;line-height:1.6;color:#5b6e6b;" align="center">
+      {% if kind != 'cancelled' %}A PDF copy is attached to this email.<br>{% endif %}
+      {{ hotel_name }} &middot; Thank you for choosing us.
+    </td></tr>
+  </table>
+</td></tr>
+</table>
+</body>
+</html>

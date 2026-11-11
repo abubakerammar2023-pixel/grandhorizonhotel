@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Guest records - {{ hotel_name }}{% endblock %}
+{% block content %}
+<h1>Guest records</h1>
+<form method="get" class="search">
+  <input type="search" name="q" value="{{ q }}" placeholder="Search by name, phone, email, room or booking ID">
+  <select name="status" aria-label="Status">
+    <option value="">All statuses</option>
+    {% for s in statuses %}<option {{ 'selected' if s == status }}>{{ s }}</option>{% endfor %}
+  </select>
+  <button type="submit" class="btn btn-small">Search</button>
+  {% if q or status %}<a class="btn btn-small btn-outline" href="{{ url_for('guests') }}">Show all</a>{% endif %}
+</form>
+
+{% if rows %}
+<div class="table-wrap card">
+  <table>
+    <thead><tr><th>Booking</th><th>Guest</th><th>Contact</th><th>Room</th><th>Check-in</th><th>Check-out</th><th>Total</th><th>Payment</th><th>Source</th><th>Status</th></tr></thead>
+    <tbody>
+      {% for r in rows %}
+      <tr>
+        <td><a href="{{ url_for('booking_page', booking_id=r.booking_id) }}">{{ r.booking_id }}</a></td>
+        <td>{{ r.name }}</td>
+        <td>{{ r.phone }}{% if r.email %}<br><small>{{ r.email }}</small>{% endif %}</td>
+        <td>{{ r.room_no }} ({{ r.room_type }})</td>
+        <td>{{ r.check_in }}</td><td>{{ r.check_out }}</td>
+        <td>{{ r.total|num }}</td>
+        <td>{{ r.payment }}</td>
+        <td>{{ r.source or 'Front desk' }}</td>
+        <td><span class="badge badge-st-{{ r.status|lower }}">{{ r.status }}</span></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="card empty">
+  <p>{% if q or status %}No booking matches your search.{% else %}No bookings yet.{% endif %}</p>
+  <a class="btn btn-brass" href="{{ url_for('book_room') }}">New booking</a>
+</div>
+{% endif %}
+{% endblock %}

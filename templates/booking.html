@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}Booking {{ b.booking_id }} - {{ hotel_name }}{% endblock %}
+{% block content %}
+<div class="head-row">
+  <h1>{{ b.name }} <small class="note">{{ b.booking_id }}</small></h1>
+  <span class="badge badge-st-{{ b.status|lower }} badge-big">{{ b.status }}</span>
+</div>
+
+<div class="booking-layout">
+  <div>
+    {% if b.status == 'Cancelled' %}
+      <div class="card">
+        <h2>Booking cancelled</h2>
+        <p>{% if b.cancel_reason %}Reason: {{ b.cancel_reason }}.{% endif %} Refund issued: {{ b.refund_amount|money }}.</p>
+      </div>
+    {% else %}
+      {% include "_invoice.html" %}
+    {% endif %}
+    {% if feedback_row %}
+      <div class="card">
+        <h2>Guest feedback</h2>
+        <p class="stars-view">{{ '★' * feedback_row.rating }}{{ '☆' * (5 - feedback_row.rating) }}</p>
+        {% if feedback_row.comment %}<p>{{ feedback_row.comment }}</p>{% endif %}
+      </div>
+    {% endif %}
+  </div>
+
+  <aside class="side-stack no-print">
+    {% if b.status in ('Booked', 'Checked-in') %}
+    <section class="card">
+      <h3>Check-in</h3>
+      <div class="qr-box">{{ qr|safe }}<small>Scan or type {{ b.booking_id }}</small></div>
+      {% if b.status == 'Booked' %}
+        {% if problem %}<p class="note warn">{{ problem }}</p>{% endif %}
+        <form method="post" action="{{ url_for('booking_checkin', booking_id=b.booking_id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn btn-brass btn-block" {{ 'disabled' if problem }}>Check in guest</button>
+        </form>
+      {% else %}
+        <p class="note">Checked in on {{ b.checked_in_at }}.</p>
+        <a class="btn btn-brass btn-block" href="{{ url_for('checkout') }}">Go to checkout</a>
+      {% endif %}
+    </section>
+
+    <section class="card">
+      <h3>Extend stay</h3>
+      <form method="post" action="{{ url_for('booking_extend', booking_id=b.booking_id) }}" class="form-grid">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <label>New check-out date <input type="date" name="new_check_out" min="{{ b.check_out }}" required></label>
+        <button class="btn btn-outline">Extend</button>
+      </form>
+    </section>
+
+    {% if bill.due > 0 %}
+    <section class="card">
+      <h3>Record a payment</h3>
+      <form method="post" action="{{ url_for('booking_payment', booking_id=b.booking_id) }}" class="form-grid">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <label>Amount <input type="number" name="amount" min="1" max="{{ bill.due }}" value="{{ bill.due }}" required></label>
+        <label>Method <select name="method">{% for m in methods %}<option>{{ m }}</option>{% endfor %}</select></label>
+        <button class="btn btn-outline">Save payment</button>
+      </form>
+    </section>
+    {% endif %}
+
+    <section class="card">
+      <h3>Manage</h3>
+      <div class="actions">
+        <a class="btn btn-small" href="{{ url_for('booking_edit', booking_id=b.booking_id) }}">Edit</a>
+        <a class="btn btn-small btn-outline" href="{{ url_for('invoice', booking_id=b.booking_id) }}" target="_blank">PDF</a>
+      </div>
+      {% if b.status == 'Booked' %}
+      <form method="post" action="{{ url_for('booking_cancel', booking_id=b.booking_id) }}" class="form-grid cancel-form"
+            onsubmit="return confirm('Cancel this booking?');">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <label>Cancel with reason (optional) <input type="text" name="reason" maxlength="200"></label>
+        <button class="btn btn-danger">Cancel booking</button>
+        <p class="note">Free cancellation before the arrival date. On or after it, the first night is kept and the rest of any payment is refunded.</p>
+      </form>
+      {% endif %}
+    </section>
+    {% elif b.status == 'Checked-out' %}
+    <section class="card">
+      <h3>Invoice</h3>
+      <a class="btn btn-brass btn-block" href="{{ url_for('invoice', booking_id=b.booking_id) }}" target="_blank">Download PDF</a>
+      {% if not feedback_row and feedback_url %}
+        <a class="btn btn-outline btn-block" href="{{ feedback_url }}">Collect feedback</a>
+      {% endif %}
+    </section>
+    {% endif %}
+  </aside>
+</div>
+{% endblock %}

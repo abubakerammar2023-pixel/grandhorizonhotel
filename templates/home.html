@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="hero" style="background-image: url('{{ url_for('static', filename=images.banner) }}')">
+  <div class="hero-text">
+    <h1>{{ hotel_name }}</h1>
+    <p>Book your stay online, or let the front desk manage rooms, guests, restaurant bills and checkout from one screen.</p>
+    <div class="actions">
+      <a class="btn btn-brass" href="{{ url_for('online_booking') }}">Book online</a>
+      {% if user %}
+        <a class="btn btn-ghost" href="{{ url_for('checkin_lookup') }}">QR check-in</a>
+      {% else %}
+        <a class="btn btn-ghost" href="{{ url_for('login') }}">Staff login</a>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<section class="stats">
+  <div><strong>{{ stats.total }}</strong><span>Rooms</span></div>
+  <div><strong>{{ stats.available }}</strong><span>Free right now</span></div>
+  <div><strong>{{ stats.reserved }}</strong><span>Reserved</span></div>
+  <div><strong>{{ stats.occupied }}</strong><span>Occupied</span></div>
+</section>
+
+{% if user %}
+<section class="two-col">
+  <div class="card">
+    <h2>Arrivals today</h2>
+    {% if arrivals %}
+      <ul class="plain-list">
+        {% for a in arrivals %}
+        <li><a href="{{ url_for('booking_page', booking_id=a.booking_id) }}">{{ a.name }}</a> &middot; room {{ a.room_no }} <span class="note">({{ a.booking_id }})</span></li>
+        {% endfor %}
+      </ul>
+    {% else %}<p class="note">No arrivals waiting.</p>{% endif %}
+  </div>
+  <div class="card">
+    <h2>Departures today</h2>
+    {% if departures %}
+      <ul class="plain-list">
+        {% for d in departures %}
+        <li><a href="{{ url_for('booking_page', booking_id=d.booking_id) }}">{{ d.name }}</a> &middot; room {{ d.room_no }} <span class="note">({{ d.booking_id }})</span></li>
+        {% endfor %}
+      </ul>
+    {% else %}<p class="note">No departures due.</p>{% endif %}
+  </div>
+</section>
+{% endif %}
+
+<section>
+  <h2>Rooms</h2>
+  <div class="room-grid">
+    {% for room in rooms %}
+    <article class="room-card">
+      <div class="room-photo">
+        <img src="{{ url_for('static', filename=room.image) }}" alt="{{ room.type }} room" onerror="this.style.display='none'">
+        <span class="badge badge-{{ room.status|lower }}">{{ room.status }}</span>
+        {% if user and room.housekeeping != 'Clean' %}<span class="badge badge-hk">{{ room.housekeeping }}</span>{% endif %}
+      </div>
+      <div class="room-body">
+        <h3>Room {{ room.no }}</h3>
+        <p>{{ room.type }} &middot; {{ room.price|money }} per night</p>
+        {% if user %}
+          <a class="btn btn-small" href="{{ url_for('book_room', room=room.no) }}">Book this room</a>
+        {% else %}
+          <a class="btn btn-small" href="{{ url_for('online_booking', room=room.no) }}">Book this room</a>
+        {% endif %}
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="split">
+  <div class="split-photo"><img src="{{ url_for('static', filename=images.hotel) }}" alt="{{ hotel_name }} from outside" onerror="this.style.display='none'"></div>
+  <div class="split-text">
+    <h2>The hotel</h2>
+    <p>Every booking, guest and bill is kept in a database, so the front desk always sees which rooms are free and what each guest owes.</p>
+  </div>
+</section>
+
+<section class="split split-reverse">
+  <div class="split-photo"><img src="{{ url_for('static', filename=images.restaurant) }}" alt="Hotel restaurant" onerror="this.style.display='none'"></div>
+  <div class="split-text">
+    <h2>Restaurant and services</h2>
+    <p>Meals, laundry, spa and taxi are added to the guest's room bill and shown on the final invoice.</p>
+  </div>
+</section>
+{% endblock %}

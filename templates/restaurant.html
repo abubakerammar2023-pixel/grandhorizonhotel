@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Restaurant - {{ hotel_name }}{% endblock %}
+{% block content %}
+<h1>Restaurant billing</h1>
+<div class="two-col">
+  <section class="card">
+    <h2>Add an order</h2>
+    {% if in_house %}
+    <form method="post" class="form-grid">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label>Guest
+        <select name="booking_id" required>
+          {% for g in in_house %}<option value="{{ g.booking_id }}">Room {{ g.room_no }} - {{ g.name }}</option>{% endfor %}
+        </select>
+      </label>
+      <label>Menu item
+        <select name="item" required>{% for item, price in menu.items() %}<option value="{{ item }}">{{ item }} ({{ price }})</option>{% endfor %}</select>
+      </label>
+      <label>Quantity <input type="number" name="qty" value="1" min="1" max="50" required></label>
+      <button type="submit" class="btn btn-brass">Add to room bill</button>
+    </form>
+    {% else %}
+      <p>No guests are checked in right now, so there is nobody to bill.</p>
+      <a class="btn btn-brass" href="{{ url_for('guests', status='Booked') }}">See booked guests</a>
+    {% endif %}
+  </section>
+  <section class="card">
+    <h2>Menu</h2>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Item</th><th>Price</th></tr></thead>
+      <tbody>{% for item, price in menu.items() %}<tr><td>{{ item }}</td><td>{{ price }}</td></tr>{% endfor %}</tbody>
+    </table></div>
+  </section>
+</div>
+{% if in_house %}
+<section class="card">
+  <h2>Restaurant totals for guests in the hotel</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Room</th><th>Guest</th><th>Restaurant total</th></tr></thead>
+    <tbody>{% for g in in_house %}<tr><td>{{ g.room_no }}</td><td><a href="{{ url_for('booking_page', booking_id=g.booking_id) }}">{{ g.name }}</a></td><td>{{ g.food|num }}</td></tr>{% endfor %}</tbody>
+  </table></div>
+</section>
+{% endif %}
+{% endblock %}

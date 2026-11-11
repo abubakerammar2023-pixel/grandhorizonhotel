@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Payment - {{ hotel_name }}{% endblock %}
+{% block content %}
+<h1>Payment</h1>
+<div class="two-col">
+  <section class="card">
+    <h2>Your booking</h2>
+    <dl class="bill-info">
+      <div><dt>Guest</dt><dd>{{ s.form.name }}</dd></div>
+      <div><dt>Room</dt><dd>{{ s.form.room_no }} ({{ s.type }})</dd></div>
+      <div><dt>Check-in</dt><dd>{{ s.form.check_in }}</dd></div>
+      <div><dt>Check-out</dt><dd>{{ s.form.check_out }}</dd></div>
+      <div><dt>Nights</dt><dd>{{ s.nights }}</dd></div>
+      <div><dt>Amount to pay</dt><dd>{{ s.charge|money }}</dd></div>
+    </dl>
+    <a class="btn btn-outline" href="{{ url_for('online_booking') }}">Change booking</a>
+  </section>
+  <form method="post" class="card form-grid" autocomplete="off">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <h2>Card details</h2>
+    <p class="note">Demo payment gateway: no real money is taken and card details are never saved. Use the test card 4242 4242 4242 4242 with any future expiry and any 3 digit code.</p>
+    <label>Name on card <input type="text" name="card_name" required></label>
+    <label>Card number <input type="text" name="card_number" inputmode="numeric" placeholder="4242 4242 4242 4242" required></label>
+    <label>Expiry (MM/YY) <input type="text" name="expiry" placeholder="12/29" required></label>
+    <label>Security code <input type="password" name="cvv" inputmode="numeric" maxlength="4" required></label>
+    <button type="submit" class="btn btn-brass">Pay {{ s.charge|money }}</button>
+  </form>
+</div>
+{% endblock %}

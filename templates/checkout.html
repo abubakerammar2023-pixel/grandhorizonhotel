@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Checkout - {{ hotel_name }}{% endblock %}
+{% block content %}
+<h1>Checkout</h1>
+{% if in_house %}
+<section class="card narrow">
+  <form method="post" class="form-grid">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label>Guest to check out
+      <select name="booking_id" required>
+        {% for g in in_house %}<option value="{{ g.booking_id }}">Room {{ g.room_no }} - {{ g.name }} (until {{ g.check_out }})</option>{% endfor %}
+      </select>
+    </label>
+    <button type="submit" class="btn btn-brass">Show bill</button>
+  </form>
+</section>
+{% else %}
+<section class="card empty narrow">
+  <p>No guests are checked in right now.</p>
+  <a class="btn btn-brass" href="{{ url_for('guests', status='Booked') }}">See booked guests</a>
+</section>
+{% endif %}
+{% endblock %}

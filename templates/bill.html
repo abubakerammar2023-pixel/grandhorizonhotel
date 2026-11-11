@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Final invoice' if final else 'Bill preview' }} - {{ hotel_name }}{% endblock %}
+{% block content %}
+{% include "_invoice.html" %}
+<div class="actions no-print invoice-actions">
+  {% if final %}
+    {% if paid_now %}<p class="done">Collected at checkout: {{ paid_now|money }}</p>{% endif %}
+    <a class="btn btn-brass" href="{{ url_for('invoice', booking_id=bill.booking.booking_id) }}" target="_blank">Download PDF</a>
+    <button class="btn btn-outline" onclick="window.print()">Print</button>
+    {% if feedback_url %}<a class="btn btn-outline" href="{{ feedback_url }}">Collect guest feedback</a>{% endif %}
+    <a class="btn btn-outline" href="{{ url_for('home') }}">Back to home</a>
+  {% else %}
+    <form method="post" action="{{ url_for('confirm_checkout') }}" class="actions">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="booking_id" value="{{ bill.booking.booking_id }}">
+      {% if bill.due > 0 %}
+        <label class="inline-label">Payment method
+          <select name="payment_method">{% for m in methods %}<option>{{ m }}</option>{% endfor %}</select>
+        </label>
+      {% endif %}
+      <button type="submit" class="btn btn-brass">{{ 'Receive ' ~ (bill.due|money) ~ ' and check out' if bill.due > 0 else 'Confirm checkout' }}</button>
+      <a class="btn btn-outline" href="{{ url_for('checkout') }}">Cancel</a>
+    </form>
+  {% endif %}
+</div>
+{% endblock %}

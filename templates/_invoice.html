@@ -1,0 +1,53 @@
+{# Shared bill design: needs `bill` and `qr` #}
+{% set b = bill.booking %}
+<article class="invoice">
+  <div class="invoice-top">
+    <div class="invoice-brand">
+      <img src="{{ url_for('static', filename=images.logo) }}" alt="" onerror="this.style.display='none'">
+      <h2>{{ hotel_name }}</h2>
+    </div>
+    <div class="invoice-meta">
+      <strong>{{ bill.title }}</strong>
+      <span>No. {{ bill.prefix }}-{{ b.booking_id }}</span>
+      <span>Date {{ bill.issued }}</span>
+    </div>
+  </div>
+
+  <div class="invoice-parties">
+    <div>
+      <h4>Billed to</h4>
+      <p><strong>{{ b.name }}</strong><br>{{ b.phone }}{% if b.email %}<br>{{ b.email }}{% endif %}</p>
+    </div>
+    <div>
+      <h4>Stay</h4>
+      <p>Booking {{ b.booking_id }}<br>Room {{ b.room_no }} ({{ b.room_type }})<br>{{ b.check_in }} to {{ b.check_out }} &middot; {{ b.nights }} night{{ 's' if b.nights|int != 1 }}</p>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table class="invoice-table">
+      <thead><tr><th>Description</th><th class="num">Qty</th><th class="num">Unit price</th><th class="num">Amount</th></tr></thead>
+      <tbody>
+        {% for line in bill.lines %}
+        <tr><td class="wrap">{{ line.description }}</td><td class="num">{{ line.qty }}</td><td class="num">{{ line.unit|num }}</td><td class="num">{{ line.amount|num }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="invoice-bottom">
+    <div class="stamp {{ 'stamp-paid' if bill.due == 0 else 'stamp-due' }}">{{ 'PAID IN FULL' if bill.due == 0 else 'BALANCE DUE' }}</div>
+    <dl class="totals">
+      <div class="grand"><dt>Total</dt><dd>{{ bill.total|money }}</dd></div>
+      {% for p in bill.payments %}
+        <div><dt>{{ 'Refund' if p.amount < 0 else 'Paid' }} - {{ p.method }} <small>{{ p.created_at[:10] }}</small></dt><dd>{{ p.amount|money }}</dd></div>
+      {% endfor %}
+      <div class="grand"><dt>Balance due</dt><dd>{{ bill.due|money }}</dd></div>
+    </dl>
+  </div>
+
+  <div class="invoice-foot">
+    {% if qr %}<div class="invoice-qr">{{ qr|safe }}<small>{{ b.booking_id }}</small></div>{% endif %}
+    <p>Thank you for choosing {{ hotel_name }}. The QR code holds the booking number for quick check-in.</p>
+  </div>
+</article>

@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Staff accounts - {{ hotel_name }}{% endblock %}
+{% block content %}
+<h1>Staff accounts</h1>
+<div class="two-col">
+  <section class="card">
+    <h2>Add an account</h2>
+    <form method="post" class="form-grid">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label>Username <input type="text" name="username" pattern="[a-z0-9_.\-]{3,30}" required></label>
+      <label>Password (at least 8 characters) <input type="password" name="password" minlength="8" autocomplete="new-password" required></label>
+      <label>Role
+        <select name="role"><option value="staff">Staff (front desk)</option><option value="admin">Admin (also reports, messages, staff)</option></select>
+      </label>
+      <button class="btn btn-brass">Create account</button>
+    </form>
+  </section>
+  <section class="card">
+    <h2>Accounts</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Username</th><th>Role</th><th>Reset password</th><th></th></tr></thead>
+        <tbody>
+          {% for u in users %}
+          <tr>
+            <td>{{ u.username }}{% if u.username == user %} <small>(you)</small>{% endif %}</td>
+            <td>{{ u.role }}</td>
+            <td>
+              <form method="post" action="{{ url_for('staff_reset', username=u.username) }}" class="inline-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="password" name="password" placeholder="New password" minlength="8" aria-label="New password for {{ u.username }}" required>
+                <button class="btn btn-small btn-outline">Reset</button>
+              </form>
+            </td>
+            <td>
+              {% if u.username != user %}
+              <form method="post" action="{{ url_for('staff_delete', username=u.username) }}" onsubmit="return confirm('Delete {{ u.username }}?');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="btn btn-small btn-danger">Delete</button>
+              </form>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{% endblock %}
